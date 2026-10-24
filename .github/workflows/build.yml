@@ -1,4 +1,4 @@
-name: Build Neon Lyrics
+name: Build Potinium
 on:
   push:
   workflow_dispatch:
@@ -11,8 +11,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { mc: "1.21.11", java: "21", gradle: "8.14.3" }
-          - { mc: "26.1.2", java: "25", gradle: "9.4.0" }
+          - { mc: "1.21.11", java: "21" }
+          - { mc: "26.1.2", java: "25" }
     steps:
       - uses: actions/checkout@v4
       - name: Unpack project
@@ -21,20 +21,16 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: ${{ matrix.gradle }}
       - name: Build
-        working-directory: neon-lyrics/mc-${{ matrix.mc }}
-        run: gradle build --no-daemon --stacktrace
+        run: bash neon-lyrics/ci/build.sh ${{ matrix.mc }}
       - uses: actions/upload-artifact@v4
         with:
-          name: NeonLyrics-${{ matrix.mc }}
+          name: Potinium-${{ matrix.mc }}
           path: neon-lyrics/mc-${{ matrix.mc }}/build/libs/*.jar
       - name: Publish download
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: jar-mc${{ matrix.mc }}-run${{ github.run_number }}
-          name: Neon Lyrics for Minecraft ${{ matrix.mc }}
+          tag_name: potinium-mc${{ matrix.mc }}-run${{ github.run_number }}
+          name: Potinium for Minecraft ${{ matrix.mc }}
           files: neon-lyrics/mc-${{ matrix.mc }}/build/libs/*.jar
           
