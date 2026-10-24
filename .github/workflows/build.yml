@@ -1,0 +1,40 @@
+name: Build Neon Lyrics
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mc: "1.21.11", java: "21", gradle: "8.14.3" }
+          - { mc: "26.1.2", java: "25", gradle: "9.4.0" }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack project
+        run: unzip -q -o neon-lyrics-src.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ matrix.gradle }}
+      - name: Build
+        working-directory: neon-lyrics/mc-${{ matrix.mc }}
+        run: gradle build --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NeonLyrics-${{ matrix.mc }}
+          path: neon-lyrics/mc-${{ matrix.mc }}/build/libs/*.jar
+      - name: Publish download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: jar-mc${{ matrix.mc }}-run${{ github.run_number }}
+          name: Neon Lyrics for Minecraft ${{ matrix.mc }}
+          files: neon-lyrics/mc-${{ matrix.mc }}/build/libs/*.jar
+          
